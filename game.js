@@ -48,8 +48,8 @@ let shooting = false;
 
 const levelThresholds = [50, 100, 200, 300];
 let asteroidSpeedMultiplier = 1;
-let asteroidSpawnRate = 0.02; // Re-declared here
-let enemySpawnRate = 0.005;   // Re-declared here
+let asteroidSpawnRate = 0.02;
+let enemySpawnRate = 0.005;
 
 function gameLoop() {
     if (!gameRunning) return;
@@ -314,22 +314,7 @@ function handleShooting() {
     }
 }
 
-function handleInput() {
-    document.onkeydown = (e) => {
-        if (e.key === "ArrowLeft") movingLeft = true;
-        if (e.key === "ArrowRight") movingRight = true;
-        if (e.key === "ArrowUp") movingUp = true;
-        if (e.key === "ArrowDown") movingDown = true;
-        if (e.key === " ") shooting = true;
-    };
-    document.onkeyup = (e) => {
-        if (e.key === "ArrowLeft") movingLeft = false;
-        if (e.key === "ArrowRight") movingRight = false;
-        if (e.key === "ArrowUp") movingUp = false;
-        if (e.key === "ArrowDown") movingDown = false;
-        if (e.key === " ") shooting = false;
-    };
-
+function setupButtonControls() {
     const leftBtn = document.getElementById("leftBtn");
     const rightBtn = document.getElementById("rightBtn");
     const upBtn = document.getElementById("upBtn");
@@ -357,6 +342,23 @@ function handleInput() {
     downBtn.addEventListener("mouseup", () => movingDown = false);
     shootBtn.addEventListener("mousedown", () => shooting = true);
     shootBtn.addEventListener("mouseup", () => shooting = false);
+}
+
+function handleInput() {
+    document.onkeydown = (e) => {
+        if (e.key === "ArrowLeft") movingLeft = true;
+        if (e.key === "ArrowRight") movingRight = true;
+        if (e.key === "ArrowUp") movingUp = true;
+        if (e.key === "ArrowDown") movingDown = true;
+        if (e.key === " ") shooting = true;
+    };
+    document.onkeyup = (e) => {
+        if (e.key === "ArrowLeft") movingLeft = false;
+        if (e.key === "ArrowRight") movingRight = false;
+        if (e.key === "ArrowUp") movingUp = false;
+        if (e.key === "ArrowDown") movingDown = false;
+        if (e.key === " ") shooting = false;
+    };
 }
 
 function checkLevelUp() {
@@ -413,5 +415,7 @@ window.onload = () => {
     if (!rocketImg.complete) console.error("Rocket image failed to load");
     if (!asteroidImg.complete) console.error("Asteroid image failed to load");
     if (!starImg.complete) console.error("Star image failed to load");
+    setupButtonControls(); // Set up button controls once
+    handleInput(); // Set up keyboard controls once
     gameLoop();
 };
