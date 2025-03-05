@@ -5,6 +5,8 @@ const levelDisplay = document.getElementById("level");
 const gameOverScreen = document.getElementById("gameOver");
 const finalScoreDisplay = document.getElementById("finalScore");
 const finalLevelDisplay = document.getElementById("finalLevel");
+const initialsInput = document.getElementById("initials");
+const highscoreList = document.getElementById("highscore-list");
 
 const explosionSound = document.getElementById("explosionSound");
 const starSound = document.getElementById("starSound");
@@ -18,6 +20,10 @@ const asteroidImg = new Image();
 asteroidImg.src = "asteroid.png";
 const starImg = new Image();
 starImg.src = "star.png";
+const enemyImg = new Image();
+enemyImg.src = "enemy.png";
+const shieldImg = new Image();
+shieldImg.src = "shield.png";
 
 let score = 0;
 let level = 1;
@@ -59,7 +65,6 @@ function gameLoop() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw health bar
     drawHealthBar();
     drawRocket();
     updateRocketPosition();
@@ -199,21 +204,21 @@ function drawRocket() {
 
 function drawAsteroid(asteroid) {
     if (asteroidImg.complete) {
-        ctx.drawImage(asteroidImg, asteroid.x, asteroid.y, asteroid.size, asteroid.size);
+        ctx.drawImage(asteroidImg, asteroid.x, asteroid.y, asteroid.width, asteroid.height);
     } else {
         console.error("Asteroid image not loaded");
         ctx.fillStyle = "gray";
-        ctx.fillRect(asteroid.x, asteroid.y, asteroid.size, asteroid.size);
+        ctx.fillRect(asteroid.x, asteroid.y, asteroid.width, asteroid.height);
     }
 }
 
 function drawStar(star) {
     if (starImg.complete) {
-        ctx.drawImage(starImg, star.x, star.y, star.size, star.size);
+        ctx.drawImage(starImg, star.x, star.y, star.width, star.height);
     } else {
         console.error("Star image not loaded");
         ctx.fillStyle = "yellow";
-        ctx.fillRect(star.x, star.y, star.size, star.size);
+        ctx.fillRect(star.x, star.y, star.width, star.height);
     }
 }
 
@@ -228,22 +233,33 @@ function drawEnemyBullet(bullet) {
 }
 
 function drawEnemy(enemy) {
-    ctx.fillStyle = enemy.color;
-    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+    if (enemyImg.complete) {
+        ctx.drawImage(enemyImg, enemy.x, enemy.y, enemy.width, enemy.height);
+    } else {
+        console.error("Enemy image not loaded");
+        ctx.fillStyle = enemy.color;
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+    }
 }
 
 function drawPowerUp(powerUp) {
-    ctx.fillStyle = powerUp.color;
-    ctx.beginPath();
-    ctx.arc(powerUp.x, powerUp.y, powerUp.size, 0, Math.PI * 2);
-    ctx.fill();
+    if (shieldImg.complete) {
+        ctx.drawImage(shieldImg, powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+    } else {
+        console.error("Shield image not loaded");
+        ctx.fillStyle = powerUp.color; // Fallback
+        ctx.beginPath();
+        ctx.arc(powerUp.x, powerUp.y, powerUp.width / 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
 }
 
 function spawnAsteroid() {
     asteroids.push({
         x: Math.random() * (canvas.width - 30),
         y: -30,
-        size: 30,
+        width: 30,
+        height: 30,
         speed: Math.random() * 3 + 1
     });
 }
@@ -252,7 +268,8 @@ function spawnStar() {
     stars.push({
         x: Math.random() * (canvas.width - 20),
         y: -20,
-        size: 20,
+        width: 20,
+        height: 20,
         speed: 2
     });
 }
@@ -270,16 +287,16 @@ function spawnBullet() {
 
 function spawnEnemy() {
     const types = [
-        { size: 20, health: 1, speed: 2 + level * 0.5, color: "red" },    // Small
-        { size: 40, health: 2, speed: 1 + level * 0.5, color: "purple" }, // Medium
-        { size: 60, health: 3, speed: 0.5 + level * 0.5, color: "blue" }  // Large
+        { width: 20, height: 20, health: 1, speed: 2 + level * 0.5, color: "red" },
+        { width: 40, height: 40, health: 2, speed: 1 + level * 0.5, color: "purple" },
+        { width: 60, height: 60, health: 3, speed: 0.5 + level * 0.5, color: "blue" }
     ];
     const enemy = types[Math.floor(Math.random() * types.length)];
     enemies.push({
-        x: Math.random() * (canvas.width - enemy.size),
-        y: -enemy.size,
-        width: enemy.size,
-        height: enemy.size,
+        x: Math.random() * (canvas.width - enemy.width),
+        y: -enemy.height,
+        width: enemy.width,
+        height: enemy.height,
         speed: enemy.speed,
         health: enemy.health,
         color: enemy.color
@@ -298,19 +315,19 @@ function spawnEnemyBullet(enemy) {
 
 function spawnPowerUp() {
     const types = [
-        { type: "speed", color: "green" },
-        { type: "rapid", color: "blue" },
-        { type: "multi", color: "orange" },
-        { type: "shield", color: "cyan" }
+        { type: "speed" }, // Removed color, using sprite
+        { type: "rapid" },
+        { type: "multi" },
+        { type: "shield" }
     ];
     const powerUp = types[Math.floor(Math.random() * types.length)];
     powerUps.push({
         x: Math.random() * (canvas.width - 20),
         y: -20,
-        size: 20,
+        width: 20,
+        height: 20,
         speed: 2,
-        type: powerUp.type,
-        color: powerUp.color
+        type: powerUp.type
     });
 }
 
@@ -338,9 +355,9 @@ function updatePowerUps() {
 
 function checkCollision(obj1, obj2) {
     return (
-        obj1.x < obj2.x + obj2.width &&
+        obj1.x < obj2.x + (obj2.width || obj2.size) &&
         obj1.x + obj1.width > obj2.x &&
-        obj1.y < obj2.y + obj2.height &&
+        obj1.y < obj2.y + (obj2.height || obj2.size) &&
         obj1.y + obj1.height > obj2.y
     );
 }
@@ -420,11 +437,47 @@ function checkLevelUp() {
     }
 }
 
+function loadHighscores() {
+    const highscores = JSON.parse(localStorage.getItem("rocketDodgeHighscores")) || [];
+    return highscores;
+}
+
+function saveHighscores(highscores) {
+    localStorage.setItem("rocketDodgeHighscores", JSON.stringify(highscores));
+}
+
+function updateLeaderboard() {
+    const highscores = loadHighscores();
+    highscoreList.innerHTML = "";
+    highscores.slice(0, 5).forEach((entry, index) => {
+        const li = document.createElement("li");
+        li.textContent = `${index + 1}. ${entry.initials} - ${entry.score}`;
+        highscoreList.appendChild(li);
+    });
+}
+
+function submitHighscore() {
+    const initials = initialsInput.value.trim().toUpperCase();
+    if (initials.length === 3) {
+        const highscores = loadHighscores();
+        highscores.push({ initials, score });
+        highscores.sort((a, b) => b.score - a.score);
+        saveHighscores(highscores);
+        updateLeaderboard();
+        initialsInput.disabled = true;
+        document.querySelector("#highscore-input button").disabled = true;
+    }
+}
+
 function endGame() {
     gameRunning = false;
     gameOverScreen.classList.remove("hidden");
     finalScoreDisplay.textContent = score;
     finalLevelDisplay.textContent = level;
+    initialsInput.value = "";
+    initialsInput.disabled = false;
+    document.querySelector("#highscore-input button").disabled = false;
+    updateLeaderboard();
 }
 
 function restartGame() {
@@ -458,10 +511,13 @@ function restartGame() {
 }
 
 window.onload = () => {
-    if (!rocketImg.complete) console.error("Rocket image failed to load");
-    if (!asteroidImg.complete) console.error("Asteroid image failed to load");
-    if (!starImg.complete) console.error("Star image failed to load");
+    if (!rocketImg.complete) console.error("Rocket image not loaded");
+    if (!asteroidImg.complete) console.error("Asteroid image not loaded");
+    if (!starImg.complete) console.error("Star image not loaded");
+    if (!enemyImg.complete) console.error("Enemy image not loaded");
+    if (!shieldImg.complete) console.error("Shield image not loaded");
     setupKeyboardControls();
     setupButtonControls();
+    updateLeaderboard();
     gameLoop();
 };
