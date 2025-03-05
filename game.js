@@ -383,6 +383,52 @@ function handleShooting() {
     }
 }
 
+function setupKeyboardControls() {
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") movingLeft = true;
+        if (e.key === "ArrowRight") movingRight = true;
+        if (e.key === "ArrowUp") movingUp = true;
+        if (e.key === "ArrowDown") movingDown = true;
+        if (e.key === " ") shooting = true;
+    });
+    document.addEventListener("keyup", (e) => {
+        if (e.key === "ArrowLeft") movingLeft = false;
+        if (e.key === "ArrowRight") movingRight = false;
+        if (e.key === "ArrowUp") movingUp = false;
+        if (e.key === "ArrowDown") movingDown = false;
+        if (e.key === " ") shooting = false;
+    });
+}
+
+function setupButtonControls() {
+    const leftBtn = document.getElementById("leftBtn");
+    const rightBtn = document.getElementById("rightBtn");
+    const upBtn = document.getElementById("upBtn");
+    const downBtn = document.getElementById("downBtn");
+    const fireBtn = document.getElementById("fireBtn");
+
+    function addButtonFeedback(btn, stateVar) {
+        btn.addEventListener("touchstart", () => {
+            stateVar(true);
+            btn.classList.add("pressed");
+            setTimeout(() => btn.classList.remove("pressed"), 100);
+        });
+        btn.addEventListener("touchend", () => stateVar(false));
+        btn.addEventListener("mousedown", () => {
+            stateVar(true);
+            btn.classList.add("pressed");
+            setTimeout(() => btn.classList.remove("pressed"), 100);
+        });
+        btn.addEventListener("mouseup", () => stateVar(false));
+    }
+
+    addButtonFeedback(leftBtn, (state) => movingLeft = state);
+    addButtonFeedback(rightBtn, (state) => movingRight = state);
+    addButtonFeedback(upBtn, (state) => movingUp = state);
+    addButtonFeedback(downBtn, (state) => movingDown = state);
+    addButtonFeedback(fireBtn, (state) => shooting = state);
+}
+
 function checkLevelUp() {
     for (let i = 0; i < levelThresholds.length; i++) {
         if (score >= levelThresholds[i] && level === i + 1) {
@@ -481,6 +527,6 @@ window.onload = () => {
     setupKeyboardControls();
     setupButtonControls();
     updateLeaderboard();
-    updateHealthBar(); // Initialize health bar
+    updateHealthBar();
     gameLoop();
 };
