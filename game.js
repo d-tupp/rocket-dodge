@@ -36,7 +36,7 @@ const rocket = {
     height: 50,
     speed: 5,
     shootCooldown: 500,
-    maxBullets: 1,
+    bulletCount: 1, // Default: 1 bullet
     health: 3,
     maxHealth: 5
 };
@@ -247,7 +247,7 @@ function drawPowerUp(powerUp) {
         ctx.drawImage(shieldImg, powerUp.x, powerUp.y, powerUp.width, powerUp.height);
     } else {
         console.error("Shield image not loaded");
-        ctx.fillStyle = powerUp.color; // Fallback
+        ctx.fillStyle = "cyan"; // Fallback
         ctx.beginPath();
         ctx.arc(powerUp.x, powerUp.y, powerUp.width / 2, 0, Math.PI * 2);
         ctx.fill();
@@ -276,13 +276,22 @@ function spawnStar() {
 
 function spawnBullet() {
     shootSound.play();
-    bullets.push({
-        x: rocket.x + rocket.width / 2 - 2.5,
-        y: rocket.y,
-        width: 5,
-        height: 10,
-        speed: 7
-    });
+    const spreadAngle = 10; // Degrees between bullets in spread
+    const baseX = rocket.x + rocket.width / 2 - 2.5;
+    const baseY = rocket.y;
+
+    for (let i = 0; i < rocket.bulletCount; i++) {
+        const angle = (i - (rocket.bulletCount - 1) / 2) * spreadAngle * Math.PI / 180;
+        bullets.push({
+            x: baseX,
+            y: baseY,
+            width: 5,
+            height: 10,
+            speed: 7,
+            dx: Math.sin(angle) * 7, // Horizontal velocity for spread
+            dy: -Math.cos(angle) * 7 // Vertical velocity
+        });
+    }
 }
 
 function spawnEnemy() {
@@ -315,7 +324,7 @@ function spawnEnemyBullet(enemy) {
 
 function spawnPowerUp() {
     const types = [
-        { type: "speed" }, // Removed color, using sprite
+        { type: "speed" },
         { type: "rapid" },
         { type: "multi" },
         { type: "shield" }
@@ -339,13 +348,11 @@ function applyPowerUp(type) {
         rocket.shootCooldown = 200;
         setTimeout(() => rocket.shootCooldown = 500, 5000);
     } else if (type === "multi") {
-        rocket.maxBullets = 3;
-        setTimeout(() => rocket.maxBullets = 1, 5000);
+        rocket.bulletCount += 2; // Temporary boost
+        setTimeout(() => rocket.bulletCount = level * 2 - 1, 5000); // Reset to level-based count
     } else if (type === "shield") {
-        if (rocket.health < rocket.maxHealth) {
-            rocket.health++;
-            shieldSound.play();
-        }
+        rocket.health = Math.min(rocket.health + 2, rocket.maxHealth); // Gain 2 health
+        shieldSound.play();
     }
 }
 
@@ -371,62 +378,23 @@ function updateRocketPosition() {
 
 function handleShooting() {
     const now = Date.now();
-    if (shooting && now - lastShotTime >= rocket.shootCooldown && bullets.length < rocket.maxBullets) {
+    if (shooting && now - lastShotTime >= rocket.shootCooldown) {
         spawnBullet();
         lastShotTime = now;
     }
-}
 
-function setupKeyboardControls() {
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowLeft") movingLeft = true;
-        if (e.key === "ArrowRight") movingRight = true;
-        if (e.key === "ArrowUp") movingUp = true;
-        if (e.key === "ArrowDown") movingDown = true;
-        if (e.key === " ") shooting = true;
-    });
-    document.addEventListener("keyup", (e) => {
-        if (e.key === "ArrowLeft") movingLeft = false;
-        if (e.key === "ArrowRight") movingRight = false;
-        if (e.key === "ArrowUp") movingUp = false;
-        if (e.key === "ArrowDown") movingDown = false;
-        if (e.key === " ") shooting = false;
-    });
-}
-
-function setupButtonControls() {
-    const leftBtn = document.getElementById("leftBtn");
-    const rightBtn = document.getElementById("rightBtn");
-    const upBtn = document.getElementById("upBtn");
-    const downBtn = document.getElementById("downBtn");
-    const fireBtn = document.getElementById("fireBtn");
-
-    function addButtonFeedback(btn, stateVar) {
-        btn.addEventListener("touchstart", () => {
-            stateVar(true);
-            btn.classList.add("pressed");
-            setTimeout(() => btn.classList.remove("pressed"), 100);
-        });
-        btn.addEventListener("touchend", () => stateVar(false));
-        btn.addEventListener("mousedown", () => {
-            stateVar(true);
-            btn.classList.add("pressed");
-            setTimeout(() => btn.classList.remove("pressed"), 100);
-        });
-        btn.addEventListener("mouseup", () => stateVar(false));
+    // Update bullet positions with spread
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        bullets[i].x += bullets[i].dx || 0;
+        bullets[i].y += bullets[i].dy || -bullets[i].speed;
     }
-
-    addButtonFeedback(leftBtn, (state) => movingLeft = state);
-    addButtonFeedback(rightBtn, (state) => movingRight = state);
-    addButtonFeedback(upBtn, (state) => movingUp = state);
-    addButtonFeedback(downBtn, (state) => movingDown = state);
-    addButtonFeedback(fireBtn, (state) => shooting = state);
 }
 
 function checkLevelUp() {
     for (let i = 0; i < levelThresholds.length; i++) {
         if (score >= levelThresholds[i] && level === i + 1) {
             level++;
+            rocket.bulletCount = level * 2 - 1; // 1, 3, 5, etc.
             levelDisplay.textContent = `Level: ${level}`;
             asteroidSpeedMultiplier += 0.5;
             asteroidSpawnRate += 0.01;
@@ -494,7 +462,7 @@ function restartGame() {
     rocket.y = canvas.height - 50;
     rocket.speed = 5;
     rocket.shootCooldown = 500;
-    rocket.maxBullets = 1;
+    rocket.bulletCount = 1; // Reset to 1
     rocket.health = 3;
     asteroidSpeedMultiplier = 1;
     asteroidSpawnRate = 0.02;
