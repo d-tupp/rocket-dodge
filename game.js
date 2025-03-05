@@ -67,8 +67,11 @@ function gameLoop() {
             starSound.play();
             checkLevelUp();
             stars.splice(i, 1);
+            continue; // Skip to next iteration after removal
         }
-        if (stars[i].y > canvas.height) stars.splice(i, 1);
+        if (stars[i].y > canvas.height) {
+            stars.splice(i, 1);
+        }
     }
 
     requestAnimationFrame(gameLoop);
@@ -80,7 +83,7 @@ function drawRocket() {
     } else {
         console.error("Rocket image not loaded");
         ctx.fillStyle = "red";
-        ctx.fillRect(rocket.x, rocket.y, rocket.width, rocket.height); // Fallback
+        ctx.fillRect(rocket.x, rocket.y, rocket.width, rocket.height);
     }
 }
 
@@ -90,7 +93,7 @@ function drawAsteroid(asteroid) {
     } else {
         console.error("Asteroid image not loaded");
         ctx.fillStyle = "gray";
-        ctx.fillRect(asteroid.x, asteroid.y, asteroid.size, asteroid.size); // Fallback
+        ctx.fillRect(asteroid.x, asteroid.y, asteroid.size, asteroid.size);
     }
 }
 
@@ -100,7 +103,7 @@ function drawStar(star) {
     } else {
         console.error("Star image not loaded");
         ctx.fillStyle = "yellow";
-        ctx.fillRect(star.x, star.y, star.size, star.size); // Fallback
+        ctx.fillRect(star.x, star.y, star.size, star.size);
     }
 }
 
@@ -173,7 +176,6 @@ function restartGame() {
     gameLoop();
 }
 
-// Start game immediately, log errors if assets fail
 window.onload = () => {
     if (!rocketImg.complete) console.error("Rocket image failed to load");
     if (!asteroidImg.complete) console.error("Asteroid image failed to load");
