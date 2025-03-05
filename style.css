@@ -13,7 +13,7 @@ body {
     border: 2px solid #fff;
 }
 
-#score, #level {
+#score, #level, #health {
     color: white;
     font-size: 24px;
     margin-top: 10px;
@@ -74,16 +74,33 @@ body {
     border-radius: 5px;
     cursor: pointer;
     touch-action: manipulation;
+    transition: background-color 0.1s; /* Smooth feedback */
 }
 
-.control-btn:hover, .control-btn:active {
+.control-btn:hover {
     background-color: #45a049;
+}
+
+.control-btn:active {
+    background-color: #3d8b40; /* Darker when pressed */
 }
 
 .shoot-btn {
     background-color: #ff4444;
 }
 
-.shoot-btn:hover, .shoot-btn:active {
+.shoot-btn:hover {
     background-color: #cc3333;
+}
+
+.shoot-btn:active {
+    background-color: #b32d2d; /* Darker when pressed */
+}
+
+.control-btn.pressed {
+    background-color: #3d8b40; /* Flash feedback for shoot-btn */
+}
+
+.shoot-btn.pressed {
+    background-color: #b32d2d; /* Flash feedback for shoot-btn */
 }
