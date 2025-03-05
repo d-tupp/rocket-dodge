@@ -6,12 +6,10 @@ const gameOverScreen = document.getElementById("gameOver");
 const finalScoreDisplay = document.getElementById("finalScore");
 const finalLevelDisplay = document.getElementById("finalLevel");
 
-// Load sounds
 const explosionSound = document.getElementById("explosionSound");
 const starSound = document.getElementById("starSound");
 const levelUpSound = document.getElementById("levelUpSound");
 
-// Load sprites
 const rocketImg = new Image();
 rocketImg.src = "rocket.png";
 const asteroidImg = new Image();
@@ -23,7 +21,6 @@ let score = 0;
 let level = 1;
 let gameRunning = true;
 
-// Rocket properties
 const rocket = {
     x: canvas.width / 2 - 25,
     y: canvas.height - 50,
@@ -32,12 +29,10 @@ const rocket = {
     speed: 5
 };
 
-// Arrays for asteroids and stars
 let asteroids = [];
 let stars = [];
 
-// Level progression
-const levelThresholds = [50, 100, 200, 300]; // Score needed for each level
+const levelThresholds = [50, 100, 200, 300];
 let asteroidSpeedMultiplier = 1;
 let asteroidSpawnRate = 0.02;
 
@@ -46,15 +41,12 @@ function gameLoop() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Move and draw rocket
     drawRocket();
     handleInput();
 
-    // Spawn asteroids and stars
     if (Math.random() < asteroidSpawnRate) spawnAsteroid();
     if (Math.random() < 0.01) spawnStar();
 
-    // Update and draw asteroids
     for (let i = asteroids.length - 1; i >= 0; i--) {
         asteroids[i].y += asteroids[i].speed * asteroidSpeedMultiplier;
         drawAsteroid(asteroids[i]);
@@ -66,7 +58,6 @@ function gameLoop() {
         if (asteroids[i].y > canvas.height) asteroids.splice(i, 1);
     }
 
-    // Update and draw stars
     for (let i = stars.length - 1; i >= 0; i--) {
         stars[i].y += stars[i].speed;
         drawStar(stars[i]);
@@ -83,7 +74,6 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Draw functions
 function drawRocket() {
     ctx.drawImage(rocketImg, rocket.x, rocket.y, rocket.width, rocket.height);
 }
@@ -96,7 +86,6 @@ function drawStar(star) {
     ctx.drawImage(starImg, star.x, star.y, star.size, star.size);
 }
 
-// Spawn functions
 function spawnAsteroid() {
     asteroids.push({
         x: Math.random() * (canvas.width - 30),
@@ -115,7 +104,6 @@ function spawnStar() {
     });
 }
 
-// Collision detection
 function checkCollision(obj1, obj2) {
     return (
         obj1.x < obj2.x + obj2.size &&
@@ -125,7 +113,6 @@ function checkCollision(obj1, obj2) {
     );
 }
 
-// Input handling
 function handleInput() {
     document.addEventListener("keydown", (e) => {
         if (e.key === "ArrowLeft" && rocket.x > 0) rocket.x -= rocket.speed;
@@ -133,21 +120,19 @@ function handleInput() {
     });
 }
 
-// Level progression
 function checkLevelUp() {
     for (let i = 0; i < levelThresholds.length; i++) {
         if (score >= levelThresholds[i] && level === i + 1) {
             level++;
             levelDisplay.textContent = `Level: ${level}`;
-            asteroidSpeedMultiplier += 0.5; // Increase speed
-            asteroidSpawnRate += 0.01; // More asteroids
+            asteroidSpeedMultiplier += 0.5;
+            asteroidSpawnRate += 0.01;
             levelUpSound.play();
             break;
         }
     }
 }
 
-// Game over and restart
 function endGame() {
     gameRunning = false;
     gameOverScreen.classList.remove("hidden");
@@ -170,7 +155,6 @@ function restartGame() {
     gameLoop();
 }
 
-// Start the game when images and sounds are loaded
 window.onload = () => {
     rocketImg.onload = () => {
         asteroidImg.onload = () => {
