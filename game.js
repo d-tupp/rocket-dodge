@@ -251,7 +251,7 @@ function drawPowerUp(powerUp) {
 function spawnAsteroid() {
     asteroids.push({
         x: Math.random() * (canvas.width - 30),
-        y: -30, // Fixed syntax error
+        y: -30,
         width: 30,
         height: 30,
         speed: Math.random() * 1.5 + 0.3
