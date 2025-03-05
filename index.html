@@ -10,10 +10,20 @@
     <canvas id="gameCanvas" width="400" height="600"></canvas>
     <div id="score">Score: 0</div>
     <div id="level">Level: 1</div>
+    <div id="controls-info">Controls: Arrow Keys to Move, Space to Fire</div>
     <div id="gameOver" class="hidden">
         <h1>Game Over!</h1>
         <p>Your Score: <span id="finalScore">0</span></p>
         <p>Level Reached: <span id="finalLevel">1</span></p>
+        <div id="highscore-input">
+            <label for="initials">Enter Initials (3 letters):</label>
+            <input type="text" id="initials" maxlength="3" size="3">
+            <button onclick="submitHighscore()">Submit</button>
+        </div>
+        <div id="leaderboard">
+            <h2>High Scores</h2>
+            <ul id="highscore-list"></ul>
+        </div>
         <button onclick="restartGame()">Play Again</button>
     </div>
     <div id="controls">
