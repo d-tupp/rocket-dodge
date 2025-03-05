@@ -40,12 +40,16 @@ let enemies = [];
 let powerUps = [];
 let lastShotTime = 0;
 
-// Button states
 let movingLeft = false;
 let movingRight = false;
 let movingUp = false;
 let movingDown = false;
 let shooting = false;
+
+const levelThresholds = [50, 100, 200, 300];
+let asteroidSpeedMultiplier = 1;
+let asteroidSpawnRate = 0.02; // Re-declared here
+let enemySpawnRate = 0.005;   // Re-declared here
 
 function gameLoop() {
     if (!gameRunning) return;
@@ -311,7 +315,6 @@ function handleShooting() {
 }
 
 function handleInput() {
-    // Keyboard controls
     document.onkeydown = (e) => {
         if (e.key === "ArrowLeft") movingLeft = true;
         if (e.key === "ArrowRight") movingRight = true;
@@ -327,7 +330,6 @@ function handleInput() {
         if (e.key === " ") shooting = false;
     };
 
-    // Button controls for mobile
     const leftBtn = document.getElementById("leftBtn");
     const rightBtn = document.getElementById("rightBtn");
     const upBtn = document.getElementById("upBtn");
@@ -345,7 +347,6 @@ function handleInput() {
     shootBtn.addEventListener("touchstart", () => shooting = true);
     shootBtn.addEventListener("touchend", () => shooting = false);
 
-    // Mouse support for desktop button clicks
     leftBtn.addEventListener("mousedown", () => movingLeft = true);
     leftBtn.addEventListener("mouseup", () => movingLeft = false);
     rightBtn.addEventListener("mousedown", () => movingRight = true);
