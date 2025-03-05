@@ -9,6 +9,13 @@ body {
     font-family: Arial, sans-serif;
 }
 
+#game-title {
+    color: white;
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
 #gameCanvas {
     border: 2px solid #fff;
 }
@@ -17,6 +24,22 @@ body {
     color: white;
     font-size: 24px;
     margin-top: 10px;
+}
+
+#health-bar {
+    width: 200px;
+    height: 20px;
+    background-color: gray;
+    border: 2px solid white;
+    margin-top: 10px;
+    position: relative;
+}
+
+#health-fill {
+    height: 100%;
+    background-color: green;
+    width: 100%; /* Default full health */
+    transition: width 0.3s ease; /* Smooth health change */
 }
 
 #controls-info {
