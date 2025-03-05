@@ -2,6 +2,7 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const scoreDisplay = document.getElementById("score");
 const levelDisplay = document.getElementById("level");
+const healthDisplay = document.getElementById("health");
 const gameOverScreen = document.getElementById("gameOver");
 const finalScoreDisplay = document.getElementById("finalScore");
 const finalLevelDisplay = document.getElementById("finalLevel");
@@ -29,7 +30,9 @@ const rocket = {
     height: 50,
     speed: 5,
     shootCooldown: 500,
-    maxBullets: 1
+    maxBullets: 1,
+    health: 3, // Starting health
+    maxHealth: 5 // Max health cap
 };
 
 let asteroids = [];
@@ -49,7 +52,7 @@ let shooting = false;
 const levelThresholds = [50, 100, 200, 300];
 let asteroidSpeedMultiplier = 1;
 let asteroidSpawnRate = 0.02;
-let enemySpawnRate = 0.002; // Reduced for Level 1
+let enemySpawnRate = 0.002;
 
 function gameLoop() {
     if (!gameRunning) return;
@@ -85,9 +88,12 @@ function gameLoop() {
         enemyBullets[i].y += enemyBullets[i].speed;
         drawEnemyBullet(enemyBullets[i]);
         if (checkCollision(rocket, enemyBullets[i])) {
+            rocket.health--;
+            healthDisplay.textContent = `Health: ${rocket.health}`;
             explosionSound.play();
-            endGame();
-            return;
+            enemyBullets.splice(i, 1);
+            if (rocket.health <= 0) endGame();
+            continue;
         }
         if (enemyBullets[i].y > canvas.height) enemyBullets.splice(i, 1);
     }
@@ -96,9 +102,12 @@ function gameLoop() {
         asteroids[i].y += asteroids[i].speed * asteroidSpeedMultiplier;
         drawAsteroid(asteroids[i]);
         if (checkCollision(rocket, asteroids[i])) {
+            rocket.health--;
+            healthDisplay.textContent = `Health: ${rocket.health}`;
             explosionSound.play();
-            endGame();
-            return;
+            asteroids.splice(i, 1);
+            if (rocket.health <= 0) endGame();
+            continue;
         }
         if (asteroids[i].y > canvas.height) asteroids.splice(i, 1);
     }
@@ -122,12 +131,15 @@ function gameLoop() {
         drawEnemy(enemies[i]);
         if (Math.random() < 0.02) spawnEnemyBullet(enemies[i]);
         if (checkCollision(rocket, enemies[i])) {
-            score += 15; // Points for destroying enemy by collision
+            score += 15;
             scoreDisplay.textContent = `Score: ${score}`;
-            enemies.splice(i, 1);
+            rocket.health--;
+            healthDisplay.textContent = `Health: ${rocket.health}`;
             explosionSound.play();
+            enemies.splice(i, 1);
+            if (rocket.health <= 0) endGame();
             checkLevelUp();
-            continue; // Continue to next enemy after collision
+            continue;
         }
         for (let j = bullets.length - 1; j >= 0; j--) {
             if (checkCollision(bullets[j], enemies[i])) {
@@ -255,7 +267,7 @@ function spawnEnemyBullet(enemy) {
         y: enemy.y + enemy.height,
         width: 5,
         height: 10,
-        speed: 2 + level * 0.3 // Slower initial speed
+        speed: 2 + level * 0.3
     });
 }
 
@@ -263,7 +275,8 @@ function spawnPowerUp() {
     const types = [
         { type: "speed", color: "green" },
         { type: "rapid", color: "blue" },
-        { type: "multi", color: "orange" }
+        { type: "multi", color: "orange" },
+        { type: "shield", color: "cyan" } // New shield power-up
     ];
     const powerUp = types[Math.floor(Math.random() * types.length)];
     powerUps.push({
@@ -286,6 +299,11 @@ function applyPowerUp(type) {
     } else if (type === "multi") {
         rocket.maxBullets = 3;
         setTimeout(() => rocket.maxBullets = 1, 5000);
+    } else if (type === "shield") {
+        if (rocket.health < rocket.maxHealth) {
+            rocket.health++;
+            healthDisplay.textContent = `Health: ${rocket.health}`;
+        }
     }
 }
 
@@ -339,29 +357,28 @@ function setupButtonControls() {
     const rightBtn = document.getElementById("rightBtn");
     const upBtn = document.getElementById("upBtn");
     const downBtn = document.getElementById("downBtn");
-    const fireBtn = document.getElementById("fireBtn"); // Updated ID
+    const fireBtn = document.getElementById("fireBtn");
 
-    leftBtn.addEventListener("touchstart", () => movingLeft = true);
-    leftBtn.addEventListener("touchend", () => movingLeft = false);
-    rightBtn.addEventListener("touchstart", () => movingRight = true);
-    rightBtn.addEventListener("touchend", () => movingRight = false);
-    upBtn.addEventListener("touchstart", () => movingUp = true);
-    upBtn.addEventListener("touchend", () => movingUp = false);
-    downBtn.addEventListener("touchstart", () => movingDown = true);
-    downBtn.addEventListener("touchend", () => movingDown = false);
-    fireBtn.addEventListener("touchstart", () => shooting = true);
-    fireBtn.addEventListener("touchend", () => shooting = false);
+    function addButtonFeedback(btn, stateVar) {
+        btn.addEventListener("touchstart", () => {
+            stateVar(true);
+            btn.classList.add("pressed");
+            setTimeout(() => btn.classList.remove("pressed"), 100); // Flash for 100ms
+        });
+        btn.addEventListener("touchend", () => stateVar(false));
+        btn.addEventListener("mousedown", () => {
+            stateVar(true);
+            btn.classList.add("pressed");
+            setTimeout(() => btn.classList.remove("pressed"), 100);
+        });
+        btn.addEventListener("mouseup", () => stateVar(false));
+    }
 
-    leftBtn.addEventListener("mousedown", () => movingLeft = true);
-    leftBtn.addEventListener("mouseup", () => movingLeft = false);
-    rightBtn.addEventListener("mousedown", () => movingRight = true);
-    rightBtn.addEventListener("mouseup", () => movingRight = false);
-    upBtn.addEventListener("mousedown", () => movingUp = true);
-    upBtn.addEventListener("mouseup", () => movingUp = false);
-    downBtn.addEventListener("mousedown", () => movingDown = true);
-    downBtn.addEventListener("mouseup", () => movingDown = false);
-    fireBtn.addEventListener("mousedown", () => shooting = true);
-    fireBtn.addEventListener("mouseup", () => shooting = false);
+    addButtonFeedback(leftBtn, (state) => movingLeft = state);
+    addButtonFeedback(rightBtn, (state) => movingRight = state);
+    addButtonFeedback(upBtn, (state) => movingUp = state);
+    addButtonFeedback(downBtn, (state) => movingDown = state);
+    addButtonFeedback(fireBtn, (state) => shooting = state);
 }
 
 function checkLevelUp() {
@@ -400,9 +417,10 @@ function restartGame() {
     rocket.speed = 5;
     rocket.shootCooldown = 500;
     rocket.maxBullets = 1;
+    rocket.health = 3; // Reset health
     asteroidSpeedMultiplier = 1;
     asteroidSpawnRate = 0.02;
-    enemySpawnRate = 0.002; // Reset to lower value
+    enemySpawnRate = 0.002;
     movingLeft = false;
     movingRight = false;
     movingUp = false;
@@ -410,6 +428,7 @@ function restartGame() {
     shooting = false;
     scoreDisplay.textContent = `Score: ${score}`;
     levelDisplay.textContent = `Level: ${level}`;
+    healthDisplay.textContent = `Health: ${rocket.health}`;
     gameOverScreen.classList.add("hidden");
     gameLoop();
 }
@@ -418,7 +437,7 @@ window.onload = () => {
     if (!rocketImg.complete) console.error("Rocket image failed to load");
     if (!asteroidImg.complete) console.error("Asteroid image failed to load");
     if (!starImg.complete) console.error("Star image failed to load");
-    setupKeyboardControls(); // Set up keyboard controls once
-    setupButtonControls();   // Set up button controls once
+    setupKeyboardControls();
+    setupButtonControls();
     gameLoop();
 };
