@@ -321,4 +321,96 @@ function handleInput() {
     };
     document.onkeyup = (e) => {
         if (e.key === "ArrowLeft") movingLeft = false;
-        if (e.key === "ArrowRigh
+        if (e.key === "ArrowRight") movingRight = false;
+        if (e.key === "ArrowUp") movingUp = false;
+        if (e.key === "ArrowDown") movingDown = false;
+        if (e.key === " ") shooting = false;
+    };
+
+    // Button controls for mobile
+    const leftBtn = document.getElementById("leftBtn");
+    const rightBtn = document.getElementById("rightBtn");
+    const upBtn = document.getElementById("upBtn");
+    const downBtn = document.getElementById("downBtn");
+    const shootBtn = document.getElementById("shootBtn");
+
+    leftBtn.addEventListener("touchstart", () => movingLeft = true);
+    leftBtn.addEventListener("touchend", () => movingLeft = false);
+    rightBtn.addEventListener("touchstart", () => movingRight = true);
+    rightBtn.addEventListener("touchend", () => movingRight = false);
+    upBtn.addEventListener("touchstart", () => movingUp = true);
+    upBtn.addEventListener("touchend", () => movingUp = false);
+    downBtn.addEventListener("touchstart", () => movingDown = true);
+    downBtn.addEventListener("touchend", () => movingDown = false);
+    shootBtn.addEventListener("touchstart", () => shooting = true);
+    shootBtn.addEventListener("touchend", () => shooting = false);
+
+    // Mouse support for desktop button clicks
+    leftBtn.addEventListener("mousedown", () => movingLeft = true);
+    leftBtn.addEventListener("mouseup", () => movingLeft = false);
+    rightBtn.addEventListener("mousedown", () => movingRight = true);
+    rightBtn.addEventListener("mouseup", () => movingRight = false);
+    upBtn.addEventListener("mousedown", () => movingUp = true);
+    upBtn.addEventListener("mouseup", () => movingUp = false);
+    downBtn.addEventListener("mousedown", () => movingDown = true);
+    downBtn.addEventListener("mouseup", () => movingDown = false);
+    shootBtn.addEventListener("mousedown", () => shooting = true);
+    shootBtn.addEventListener("mouseup", () => shooting = false);
+}
+
+function checkLevelUp() {
+    for (let i = 0; i < levelThresholds.length; i++) {
+        if (score >= levelThresholds[i] && level === i + 1) {
+            level++;
+            levelDisplay.textContent = `Level: ${level}`;
+            asteroidSpeedMultiplier += 0.5;
+            asteroidSpawnRate += 0.01;
+            enemySpawnRate += 0.005;
+            levelUpSound.play();
+            break;
+        }
+    }
+}
+
+function endGame() {
+    gameRunning = false;
+    gameOverScreen.classList.remove("hidden");
+    finalScoreDisplay.textContent = score;
+    finalLevelDisplay.textContent = level;
+}
+
+function restartGame() {
+    gameRunning = true;
+    score = 0;
+    level = 1;
+    asteroids = [];
+    stars = [];
+    bullets = [];
+    enemyBullets = [];
+    enemies = [];
+    powerUps = [];
+    rocket.x = canvas.width / 2 - 25;
+    rocket.y = canvas.height - 50;
+    rocket.speed = 5;
+    rocket.shootCooldown = 500;
+    rocket.maxBullets = 1;
+    asteroidSpeedMultiplier = 1;
+    asteroidSpawnRate = 0.02;
+    enemySpawnRate = 0.005;
+    movingLeft = false;
+    movingRight = false;
+    movingUp = false;
+    movingDown = false;
+    shooting = false;
+    scoreDisplay.textContent = `Score: ${score}`;
+    levelDisplay.textContent = `Level: ${level}`;
+    gameOverScreen.classList.add("hidden");
+    gameLoop();
+}
+
+window.onload = () => {
+    if (!rocketImg.complete) console.error("Rocket image failed to load");
+    if (!asteroidImg.complete) console.error("Asteroid image failed to load");
+    if (!starImg.complete) console.error("Star image failed to load");
+    gameLoop();
+};
