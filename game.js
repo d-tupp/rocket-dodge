@@ -31,6 +31,7 @@ const rocket = {
 
 let asteroids = [];
 let stars = [];
+let bullets = [];
 
 const levelThresholds = [50, 100, 200, 300];
 let asteroidSpeedMultiplier = 1;
@@ -46,6 +47,23 @@ function gameLoop() {
 
     if (Math.random() < asteroidSpawnRate) spawnAsteroid();
     if (Math.random() < 0.01) spawnStar();
+
+    // Update and draw bullets
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        bullets[i].y -= bullets[i].speed;
+        drawBullet(bullets[i]);
+        for (let j = asteroids.length - 1; j >= 0; j--) {
+            if (checkCollision(bullets[i], asteroids[j])) {
+                score += 5; // Points for destroying asteroid
+                scoreDisplay.textContent = `Score: ${score}`;
+                asteroids.splice(j, 1);
+                bullets.splice(i, 1);
+                checkLevelUp();
+                break; // Bullet destroyed, move to next bullet
+            }
+        }
+        if (bullets[i] && bullets[i].y < 0) bullets.splice(i, 1); // Remove off-screen bullets
+    }
 
     for (let i = asteroids.length - 1; i >= 0; i--) {
         asteroids[i].y += asteroids[i].speed * asteroidSpeedMultiplier;
@@ -67,11 +85,9 @@ function gameLoop() {
             starSound.play();
             checkLevelUp();
             stars.splice(i, 1);
-            continue; // Skip to next iteration after removal
+            continue;
         }
-        if (stars[i].y > canvas.height) {
-            stars.splice(i, 1);
-        }
+        if (stars[i].y > canvas.height) stars.splice(i, 1);
     }
 
     requestAnimationFrame(gameLoop);
@@ -107,6 +123,11 @@ function drawStar(star) {
     }
 }
 
+function drawBullet(bullet) {
+    ctx.fillStyle = "white";
+    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+}
+
 function spawnAsteroid() {
     asteroids.push({
         x: Math.random() * (canvas.width - 30),
@@ -125,6 +146,16 @@ function spawnStar() {
     });
 }
 
+function spawnBullet() {
+    bullets.push({
+        x: rocket.x + rocket.width / 2 - 2.5, // Center of rocket
+        y: rocket.y,
+        width: 5,
+        height: 10,
+        speed: 7
+    });
+}
+
 function checkCollision(obj1, obj2) {
     return (
         obj1.x < obj2.x + obj2.size &&
@@ -135,10 +166,13 @@ function checkCollision(obj1, obj2) {
 }
 
 function handleInput() {
-    document.addEventListener("keydown", (e) => {
+    document.onkeydown = (e) => {
         if (e.key === "ArrowLeft" && rocket.x > 0) rocket.x -= rocket.speed;
         if (e.key === "ArrowRight" && rocket.x < canvas.width - rocket.width) rocket.x += rocket.speed;
-    });
+        if (e.key === "ArrowUp" && rocket.y > 0) rocket.y -= rocket.speed;
+        if (e.key === "ArrowDown" && rocket.y < canvas.height - rocket.height) rocket.y += rocket.speed;
+        if (e.key === " " && bullets.length < 1) spawnBullet(); // One bullet at a time
+    };
 }
 
 function checkLevelUp() {
@@ -167,7 +201,9 @@ function restartGame() {
     level = 1;
     asteroids = [];
     stars = [];
+    bullets = [];
     rocket.x = canvas.width / 2 - 25;
+    rocket.y = canvas.height - 50;
     asteroidSpeedMultiplier = 1;
     asteroidSpawnRate = 0.02;
     scoreDisplay.textContent = `Score: ${score}`;
