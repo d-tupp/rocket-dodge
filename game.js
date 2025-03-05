@@ -56,10 +56,10 @@ let movingUp = false;
 let movingDown = false;
 let shooting = false;
 
-const levelThresholds = Array.from({ length: 100 }, (_, i) => 50 * Math.pow(1.1, i)); // Slower progression
+const levelThresholds = Array.from({ length: 100 }, (_, i) => 100 * Math.pow(1.05, i)); // Slower leveling
 let asteroidSpeedMultiplier = 1;
-let asteroidSpawnRate = 0.01; // Slower initial spawn
-let enemySpawnRate = 0.001;   // Slower initial spawn
+let asteroidSpawnRate = 0.01;
+let enemySpawnRate = 0.001;
 
 function updateHealthBar() {
     const healthFraction = rocket.health / rocket.maxHealth;
@@ -253,7 +253,7 @@ function spawnAsteroid() {
         y: -30,
         width: 30,
         height: 30,
-        speed: Math.random() * 1.5 + 0.3 // Slower: 0.3-1.8
+        speed: Math.random() * 1.5 + 0.3
     });
 }
 
@@ -263,7 +263,7 @@ function spawnStar() {
         y: -20,
         width: 20,
         height: 20,
-        speed: 1.5 // Slower: 1.5
+        speed: 1.5
     });
 }
 
@@ -280,7 +280,7 @@ function spawnBullet() {
             y: baseY,
             width: 5,
             height: 10,
-            speed: 4, // Slower: 4
+            speed: 4,
             dx: Math.sin(angle) * 4,
             dy: -Math.cos(angle) * 4
         });
@@ -289,9 +289,9 @@ function spawnBullet() {
 
 function spawnEnemy() {
     const types = [
-        { width: 20, height: 20, health: 1, speed: 1 + level * 0.3, color: "red" },    // Slower: 1
-        { width: 40, height: 40, health: 2, speed: 0.6 + level * 0.3, color: "purple" }, // Slower: 0.6
-        { width: 60, height: 60, health: 3, speed: 0.2 + level * 0.3, color: "blue" }    // Slower: 0.2
+        { width: 20, height: 20, health: 1, speed: 1 + level * 0.2, color: "red" },    // Slower scaling: * 0.2
+        { width: 40, height: 40, health: 2, speed: 0.6 + level * 0.2, color: "purple" },
+        { width: 60, height: 60, health: 3, speed: 0.2 + level * 0.2, color: "blue" }
     ];
     const enemy = types[Math.floor(Math.random() * types.length)];
     enemies.push({
@@ -311,7 +311,7 @@ function spawnEnemyBullet(enemy) {
         y: enemy.y + enemy.height,
         width: 5,
         height: 10,
-        speed: 1 + level * 0.1 // Slower: 1 + level * 0.1
+        speed: 1 + level * 0.1
     });
 }
 
@@ -333,7 +333,7 @@ function spawnPowerUp() {
         y: -20,
         width: 20,
         height: 20,
-        speed: 1.5, // Slower: 1.5
+        speed: 1.5,
         type: powerUp.type
     });
 }
@@ -347,7 +347,7 @@ function applyPowerUp(type) {
         setTimeout(() => rocket.shootCooldown = 750, 5000);
     } else if (type === "multi") {
         rocket.bulletCount += 2;
-        setTimeout(() => rocket.bulletCount = Math.min(level, 5) * 2 - 1, 5000); // Cap at 9
+        setTimeout(() => rocket.bulletCount = Math.min(level, 5) * 2 - 1, 5000);
     } else if (type === "shield") {
         rocket.health = Math.min(rocket.health + 2, rocket.maxHealth);
         shieldSound.play();
@@ -438,11 +438,11 @@ function checkLevelUp() {
     for (let i = 0; i < levelThresholds.length; i++) {
         if (score >= levelThresholds[i] && level === i + 1) {
             level++;
-            rocket.bulletCount = Math.min(level, 5) * 2 - 1; // Cap at 9 bullets
+            rocket.bulletCount = Math.min(level, 5) * 2 - 1;
             levelDisplay.textContent = `Level: ${level}`;
-            asteroidSpeedMultiplier += 0.1; // Slower increase
-            asteroidSpawnRate += 0.005;     // Slower increase
-            enemySpawnRate += 0.002;        // Slower increase
+            asteroidSpeedMultiplier += 0.05; // Slower increase
+            asteroidSpawnRate += 0.002;      // Slower increase
+            enemySpawnRate += 0.001;         // Slower increase
             levelUpSound.play();
             break;
         }
