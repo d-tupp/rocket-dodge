@@ -55,3 +55,35 @@ body {
 .hidden {
     display: none;
 }
+
+#controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.control-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    touch-action: manipulation; /* Prevents zoom on mobile */
+}
+
+.control-btn:hover, .control-btn:active {
+    background-color: #45a049;
+}
+
+.shoot-btn {
+    background-color: #ff4444;
+}
+
+.shoot-btn:hover, .shoot-btn:active {
+    background-color: #cc3333;
+}
