@@ -16,9 +16,17 @@
         <p>Level Reached: <span id="finalLevel">1</span></p>
         <button onclick="restartGame()">Play Again</button>
     </div>
+    <div id="controls">
+        <button id="leftBtn" class="control-btn">←</button>
+        <button id="rightBtn" class="control-btn">→</button>
+        <button id="upBtn" class="control-btn">↑</button>
+        <button id="downBtn" class="control-btn">↓</button>
+        <button id="shootBtn" class="control-btn shoot-btn">Shoot</button>
+    </div>
     <audio id="explosionSound" src="explosion.wav"></audio>
     <audio id="starSound" src="star.wav"></audio>
     <audio id="levelUpSound" src="levelup.wav"></audio>
+    <audio id="shootSound" src="shoot.wav"></audio>
     <script src="game.js"></script>
 </body>
 </html>
