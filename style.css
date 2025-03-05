@@ -10,10 +10,11 @@ body {
 }
 
 #game-title {
-    color: white;
-    font-size: 36px;
+    color: #00FFFF; /* Bright cyan */
+    font-size: 48px; /* Bigger */
     font-weight: bold;
     margin-bottom: 10px;
+    text-shadow: 2px 2px 4px #000; /* Optional: Adds contrast */
 }
 
 #gameCanvas {
@@ -38,8 +39,8 @@ body {
 #health-fill {
     height: 100%;
     background-color: green;
-    width: 100%; /* Default full health */
-    transition: width 0.3s ease; /* Smooth health change */
+    width: 100%;
+    transition: width 0.3s ease;
 }
 
 #controls-info {
