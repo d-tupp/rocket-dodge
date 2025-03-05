@@ -36,7 +36,7 @@ const rocket = {
     width: 50,
     height: 50,
     speed: 5,
-    shootCooldown: 500,
+    shootCooldown: 750, // Reduced fire rate (was 500ms)
     bulletCount: 1,
     health: 3,
     maxHealth: 5
@@ -56,7 +56,9 @@ let movingUp = false;
 let movingDown = false;
 let shooting = false;
 
-const levelThresholds = [50, 100, 200, 300];
+// Generate 100 levels with exponential progression
+const levelThresholds = Array.from({ length: 100 }, (_, i) => 50 * Math.pow(1.2, i));
+
 let asteroidSpeedMultiplier = 1;
 let asteroidSpawnRate = 0.02;
 let enemySpawnRate = 0.002;
@@ -78,7 +80,7 @@ function gameLoop() {
     if (Math.random() < asteroidSpawnRate) spawnAsteroid();
     if (Math.random() < 0.01) spawnStar();
     if (Math.random() < enemySpawnRate) spawnEnemy();
-    if (Math.random() < 0.005) spawnPowerUp();
+    if (Math.random() < 0.002) spawnPowerUp(); // Reduced from 0.005
 
     for (let i = bullets.length - 1; i >= 0; i--) {
         bullets[i].y -= bullets[i].speed;
@@ -317,12 +319,17 @@ function spawnEnemyBullet(enemy) {
 
 function spawnPowerUp() {
     const types = [
-        { type: "speed" },
-        { type: "rapid" },
-        { type: "multi" },
-        { type: "shield" }
+        { type: "speed", chance: 0.3 },
+        { type: "rapid", chance: 0.3 },
+        { type: "multi", chance: 0.3 },
+        { type: "shield", chance: 0.1 } // Reduced shield chance
     ];
-    const powerUp = types[Math.floor(Math.random() * types.length)];
+    const rand = Math.random();
+    let cumulativeChance = 0;
+    const powerUp = types.find(t => {
+        cumulativeChance += t.chance;
+        return rand < cumulativeChance;
+    }) || types[0]; // Fallback to first type
     powerUps.push({
         x: Math.random() * (canvas.width - 20),
         y: -20,
@@ -338,8 +345,8 @@ function applyPowerUp(type) {
         rocket.speed = 8;
         setTimeout(() => rocket.speed = 5, 5000);
     } else if (type === "rapid") {
-        rocket.shootCooldown = 200;
-        setTimeout(() => rocket.shootCooldown = 500, 5000);
+        rocket.shootCooldown = 300; // Reduced rapid effect (was 200ms)
+        setTimeout(() => rocket.shootCooldown = 750, 5000);
     } else if (type === "multi") {
         rocket.bulletCount += 2;
         setTimeout(() => rocket.bulletCount = level * 2 - 1, 5000);
@@ -500,7 +507,7 @@ function restartGame() {
     rocket.x = canvas.width / 2 - 25;
     rocket.y = canvas.height - 50;
     rocket.speed = 5;
-    rocket.shootCooldown = 500;
+    rocket.shootCooldown = 750;
     rocket.bulletCount = 1;
     rocket.health = 3;
     asteroidSpeedMultiplier = 1;
