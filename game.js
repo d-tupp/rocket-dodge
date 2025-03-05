@@ -2,6 +2,7 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const scoreDisplay = document.getElementById("score");
 const levelDisplay = document.getElementById("level");
+const healthFill = document.getElementById("health-fill");
 const gameOverScreen = document.getElementById("gameOver");
 const finalScoreDisplay = document.getElementById("finalScore");
 const finalLevelDisplay = document.getElementById("finalLevel");
@@ -36,7 +37,7 @@ const rocket = {
     height: 50,
     speed: 5,
     shootCooldown: 500,
-    bulletCount: 1, // Default: 1 bullet
+    bulletCount: 1,
     health: 3,
     maxHealth: 5
 };
@@ -60,12 +61,16 @@ let asteroidSpeedMultiplier = 1;
 let asteroidSpawnRate = 0.02;
 let enemySpawnRate = 0.002;
 
+function updateHealthBar() {
+    const healthFraction = rocket.health / rocket.maxHealth;
+    healthFill.style.width = `${healthFraction * 100}%`;
+}
+
 function gameLoop() {
     if (!gameRunning) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    drawHealthBar();
     drawRocket();
     updateRocketPosition();
     handleShooting();
@@ -97,6 +102,7 @@ function gameLoop() {
         if (checkCollision(rocket, enemyBullets[i])) {
             rocket.health--;
             explosionSound.play();
+            updateHealthBar();
             enemyBullets.splice(i, 1);
             if (rocket.health <= 0) endGame();
             continue;
@@ -110,6 +116,7 @@ function gameLoop() {
         if (checkCollision(rocket, asteroids[i])) {
             rocket.health--;
             explosionSound.play();
+            updateHealthBar();
             asteroids.splice(i, 1);
             if (rocket.health <= 0) endGame();
             continue;
@@ -140,6 +147,7 @@ function gameLoop() {
             scoreDisplay.textContent = `Score: ${score}`;
             rocket.health--;
             explosionSound.play();
+            updateHealthBar();
             enemies.splice(i, 1);
             if (rocket.health <= 0) endGame();
             checkLevelUp();
@@ -175,21 +183,6 @@ function gameLoop() {
     updatePowerUps();
 
     requestAnimationFrame(gameLoop);
-}
-
-function drawHealthBar() {
-    const barWidth = 200;
-    const barHeight = 20;
-    const barX = (canvas.width - barWidth) / 2;
-    const barY = 10;
-    const healthFraction = rocket.health / rocket.maxHealth;
-
-    ctx.fillStyle = "gray";
-    ctx.fillRect(barX, barY, barWidth, barHeight);
-    ctx.fillStyle = "green";
-    ctx.fillRect(barX, barY, barWidth * healthFraction, barHeight);
-    ctx.strokeStyle = "white";
-    ctx.strokeRect(barX, barY, barWidth, barHeight);
 }
 
 function drawRocket() {
@@ -247,7 +240,7 @@ function drawPowerUp(powerUp) {
         ctx.drawImage(shieldImg, powerUp.x, powerUp.y, powerUp.width, powerUp.height);
     } else {
         console.error("Shield image not loaded");
-        ctx.fillStyle = "cyan"; // Fallback
+        ctx.fillStyle = "cyan";
         ctx.beginPath();
         ctx.arc(powerUp.x, powerUp.y, powerUp.width / 2, 0, Math.PI * 2);
         ctx.fill();
@@ -276,7 +269,7 @@ function spawnStar() {
 
 function spawnBullet() {
     shootSound.play();
-    const spreadAngle = 10; // Degrees between bullets in spread
+    const spreadAngle = 10;
     const baseX = rocket.x + rocket.width / 2 - 2.5;
     const baseY = rocket.y;
 
@@ -288,8 +281,8 @@ function spawnBullet() {
             width: 5,
             height: 10,
             speed: 7,
-            dx: Math.sin(angle) * 7, // Horizontal velocity for spread
-            dy: -Math.cos(angle) * 7 // Vertical velocity
+            dx: Math.sin(angle) * 7,
+            dy: -Math.cos(angle) * 7
         });
     }
 }
@@ -348,11 +341,12 @@ function applyPowerUp(type) {
         rocket.shootCooldown = 200;
         setTimeout(() => rocket.shootCooldown = 500, 5000);
     } else if (type === "multi") {
-        rocket.bulletCount += 2; // Temporary boost
-        setTimeout(() => rocket.bulletCount = level * 2 - 1, 5000); // Reset to level-based count
+        rocket.bulletCount += 2;
+        setTimeout(() => rocket.bulletCount = level * 2 - 1, 5000);
     } else if (type === "shield") {
-        rocket.health = Math.min(rocket.health + 2, rocket.maxHealth); // Gain 2 health
+        rocket.health = Math.min(rocket.health + 2, rocket.maxHealth);
         shieldSound.play();
+        updateHealthBar();
     }
 }
 
@@ -383,7 +377,6 @@ function handleShooting() {
         lastShotTime = now;
     }
 
-    // Update bullet positions with spread
     for (let i = bullets.length - 1; i >= 0; i--) {
         bullets[i].x += bullets[i].dx || 0;
         bullets[i].y += bullets[i].dy || -bullets[i].speed;
@@ -394,7 +387,7 @@ function checkLevelUp() {
     for (let i = 0; i < levelThresholds.length; i++) {
         if (score >= levelThresholds[i] && level === i + 1) {
             level++;
-            rocket.bulletCount = level * 2 - 1; // 1, 3, 5, etc.
+            rocket.bulletCount = level * 2 - 1;
             levelDisplay.textContent = `Level: ${level}`;
             asteroidSpeedMultiplier += 0.5;
             asteroidSpawnRate += 0.01;
@@ -462,7 +455,7 @@ function restartGame() {
     rocket.y = canvas.height - 50;
     rocket.speed = 5;
     rocket.shootCooldown = 500;
-    rocket.bulletCount = 1; // Reset to 1
+    rocket.bulletCount = 1;
     rocket.health = 3;
     asteroidSpeedMultiplier = 1;
     asteroidSpawnRate = 0.02;
@@ -474,6 +467,7 @@ function restartGame() {
     shooting = false;
     scoreDisplay.textContent = `Score: ${score}`;
     levelDisplay.textContent = `Level: ${level}`;
+    updateHealthBar();
     gameOverScreen.classList.add("hidden");
     gameLoop();
 }
@@ -487,5 +481,6 @@ window.onload = () => {
     setupKeyboardControls();
     setupButtonControls();
     updateLeaderboard();
+    updateHealthBar(); // Initialize health bar
     gameLoop();
 };
