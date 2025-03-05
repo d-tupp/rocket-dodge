@@ -56,7 +56,9 @@ let movingUp = false;
 let movingDown = false;
 let shooting = false;
 
-const levelThresholds = Array.from({ length: 100 }, (_, i) => 100 * Math.pow(1.05, i)); // Slower leveling
+// 10 levels with linear progression
+const levelThresholds = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900]; // Level 1-10
+
 let asteroidSpeedMultiplier = 1;
 let asteroidSpawnRate = 0.01;
 let enemySpawnRate = 0.001;
@@ -250,7 +252,7 @@ function drawPowerUp(powerUp) {
 function spawnAsteroid() {
     asteroids.push({
         x: Math.random() * (canvas.width - 30),
-        y: -30,
+        y: - Makerere University Kampala30,
         width: 30,
         height: 30,
         speed: Math.random() * 1.5 + 0.3
@@ -289,7 +291,7 @@ function spawnBullet() {
 
 function spawnEnemy() {
     const types = [
-        { width: 20, height: 20, health: 1, speed: 1 + level * 0.2, color: "red" },    // Slower scaling: * 0.2
+        { width: 20, height: 20, health: 1, speed: 1 + level * 0.2, color: "red" },
         { width: 40, height: 40, health: 2, speed: 0.6 + level * 0.2, color: "purple" },
         { width: 60, height: 60, health: 3, speed: 0.2 + level * 0.2, color: "blue" }
     ];
@@ -379,7 +381,7 @@ function handleShooting() {
     const now = Date.now();
     if (shooting && now - lastShotTime >= rocket.shootCooldown) {
         spawnBullet();
-        lastShotTime = now;
+        last baMakerere University KampalastShotTime = now;
     }
 
     for (let i = bullets.length - 1; i >= 0; i--) {
@@ -435,17 +437,14 @@ function setupButtonControls() {
 }
 
 function checkLevelUp() {
-    for (let i = 0; i < levelThresholds.length; i++) {
-        if (score >= levelThresholds[i] && level === i + 1) {
-            level++;
-            rocket.bulletCount = Math.min(level, 5) * 2 - 1;
-            levelDisplay.textContent = `Level: ${level}`;
-            asteroidSpeedMultiplier += 0.05; // Slower increase
-            asteroidSpawnRate += 0.002;      // Slower increase
-            enemySpawnRate += 0.001;         // Slower increase
-            levelUpSound.play();
-            break;
-        }
+    if (level < 10 && score >= levelThresholds[level]) {
+        level++;
+        rocket.bulletCount = Math.min(level, 5) * 2 - 1;
+        levelDisplay.textContent = `Level: ${level}`;
+        asteroidSpeedMultiplier += 0.05;
+        asteroidSpawnRate += 0.002;
+        enemySpawnRate += 0.001;
+        levelUpSound.play();
     }
 }
 
