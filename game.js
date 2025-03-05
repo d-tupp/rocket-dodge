@@ -2,7 +2,6 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const scoreDisplay = document.getElementById("score");
 const levelDisplay = document.getElementById("level");
-const healthDisplay = document.getElementById("health");
 const gameOverScreen = document.getElementById("gameOver");
 const finalScoreDisplay = document.getElementById("finalScore");
 const finalLevelDisplay = document.getElementById("finalLevel");
@@ -11,6 +10,7 @@ const explosionSound = document.getElementById("explosionSound");
 const starSound = document.getElementById("starSound");
 const levelUpSound = document.getElementById("levelUpSound");
 const shootSound = document.getElementById("shootSound");
+const shieldSound = document.getElementById("shieldSound");
 
 const rocketImg = new Image();
 rocketImg.src = "rocket.png";
@@ -31,8 +31,8 @@ const rocket = {
     speed: 5,
     shootCooldown: 500,
     maxBullets: 1,
-    health: 3, // Starting health
-    maxHealth: 5 // Max health cap
+    health: 3,
+    maxHealth: 5
 };
 
 let asteroids = [];
@@ -59,6 +59,8 @@ function gameLoop() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Draw health bar
+    drawHealthBar();
     drawRocket();
     updateRocketPosition();
     handleShooting();
@@ -89,7 +91,6 @@ function gameLoop() {
         drawEnemyBullet(enemyBullets[i]);
         if (checkCollision(rocket, enemyBullets[i])) {
             rocket.health--;
-            healthDisplay.textContent = `Health: ${rocket.health}`;
             explosionSound.play();
             enemyBullets.splice(i, 1);
             if (rocket.health <= 0) endGame();
@@ -103,7 +104,6 @@ function gameLoop() {
         drawAsteroid(asteroids[i]);
         if (checkCollision(rocket, asteroids[i])) {
             rocket.health--;
-            healthDisplay.textContent = `Health: ${rocket.health}`;
             explosionSound.play();
             asteroids.splice(i, 1);
             if (rocket.health <= 0) endGame();
@@ -134,7 +134,6 @@ function gameLoop() {
             score += 15;
             scoreDisplay.textContent = `Score: ${score}`;
             rocket.health--;
-            healthDisplay.textContent = `Health: ${rocket.health}`;
             explosionSound.play();
             enemies.splice(i, 1);
             if (rocket.health <= 0) endGame();
@@ -143,11 +142,14 @@ function gameLoop() {
         }
         for (let j = bullets.length - 1; j >= 0; j--) {
             if (checkCollision(bullets[j], enemies[i])) {
-                score += 15;
-                scoreDisplay.textContent = `Score: ${score}`;
-                enemies.splice(i, 1);
+                enemies[i].health--;
                 bullets.splice(j, 1);
-                checkLevelUp();
+                if (enemies[i].health <= 0) {
+                    score += 15;
+                    scoreDisplay.textContent = `Score: ${score}`;
+                    enemies.splice(i, 1);
+                    checkLevelUp();
+                }
                 break;
             }
         }
@@ -168,6 +170,21 @@ function gameLoop() {
     updatePowerUps();
 
     requestAnimationFrame(gameLoop);
+}
+
+function drawHealthBar() {
+    const barWidth = 200;
+    const barHeight = 20;
+    const barX = (canvas.width - barWidth) / 2;
+    const barY = 10;
+    const healthFraction = rocket.health / rocket.maxHealth;
+
+    ctx.fillStyle = "gray";
+    ctx.fillRect(barX, barY, barWidth, barHeight);
+    ctx.fillStyle = "green";
+    ctx.fillRect(barX, barY, barWidth * healthFraction, barHeight);
+    ctx.strokeStyle = "white";
+    ctx.strokeRect(barX, barY, barWidth, barHeight);
 }
 
 function drawRocket() {
@@ -211,7 +228,7 @@ function drawEnemyBullet(bullet) {
 }
 
 function drawEnemy(enemy) {
-    ctx.fillStyle = "purple";
+    ctx.fillStyle = enemy.color;
     ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
 }
 
@@ -252,12 +269,20 @@ function spawnBullet() {
 }
 
 function spawnEnemy() {
+    const types = [
+        { size: 20, health: 1, speed: 2 + level * 0.5, color: "red" },    // Small
+        { size: 40, health: 2, speed: 1 + level * 0.5, color: "purple" }, // Medium
+        { size: 60, health: 3, speed: 0.5 + level * 0.5, color: "blue" }  // Large
+    ];
+    const enemy = types[Math.floor(Math.random() * types.length)];
     enemies.push({
-        x: Math.random() * (canvas.width - 40),
-        y: -40,
-        width: 40,
-        height: 40,
-        speed: 1 + level * 0.5
+        x: Math.random() * (canvas.width - enemy.size),
+        y: -enemy.size,
+        width: enemy.size,
+        height: enemy.size,
+        speed: enemy.speed,
+        health: enemy.health,
+        color: enemy.color
     });
 }
 
@@ -276,7 +301,7 @@ function spawnPowerUp() {
         { type: "speed", color: "green" },
         { type: "rapid", color: "blue" },
         { type: "multi", color: "orange" },
-        { type: "shield", color: "cyan" } // New shield power-up
+        { type: "shield", color: "cyan" }
     ];
     const powerUp = types[Math.floor(Math.random() * types.length)];
     powerUps.push({
@@ -302,7 +327,7 @@ function applyPowerUp(type) {
     } else if (type === "shield") {
         if (rocket.health < rocket.maxHealth) {
             rocket.health++;
-            healthDisplay.textContent = `Health: ${rocket.health}`;
+            shieldSound.play();
         }
     }
 }
@@ -313,9 +338,9 @@ function updatePowerUps() {
 
 function checkCollision(obj1, obj2) {
     return (
-        obj1.x < obj2.x + obj2.size &&
+        obj1.x < obj2.x + obj2.width &&
         obj1.x + obj1.width > obj2.x &&
-        obj1.y < obj2.y + obj2.size &&
+        obj1.y < obj2.y + obj2.height &&
         obj1.y + obj1.height > obj2.y
     );
 }
@@ -363,7 +388,7 @@ function setupButtonControls() {
         btn.addEventListener("touchstart", () => {
             stateVar(true);
             btn.classList.add("pressed");
-            setTimeout(() => btn.classList.remove("pressed"), 100); // Flash for 100ms
+            setTimeout(() => btn.classList.remove("pressed"), 100);
         });
         btn.addEventListener("touchend", () => stateVar(false));
         btn.addEventListener("mousedown", () => {
@@ -417,7 +442,7 @@ function restartGame() {
     rocket.speed = 5;
     rocket.shootCooldown = 500;
     rocket.maxBullets = 1;
-    rocket.health = 3; // Reset health
+    rocket.health = 3;
     asteroidSpeedMultiplier = 1;
     asteroidSpawnRate = 0.02;
     enemySpawnRate = 0.002;
@@ -428,7 +453,6 @@ function restartGame() {
     shooting = false;
     scoreDisplay.textContent = `Score: ${score}`;
     levelDisplay.textContent = `Level: ${level}`;
-    healthDisplay.textContent = `Health: ${rocket.health}`;
     gameOverScreen.classList.add("hidden");
     gameLoop();
 }
