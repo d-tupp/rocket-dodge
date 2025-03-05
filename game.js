@@ -56,8 +56,7 @@ let movingUp = false;
 let movingDown = false;
 let shooting = false;
 
-// 10 levels with linear progression
-const levelThresholds = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900]; // Level 1-10
+const levelThresholds = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900]; // 10 levels
 
 let asteroidSpeedMultiplier = 1;
 let asteroidSpawnRate = 0.01;
@@ -252,7 +251,7 @@ function drawPowerUp(powerUp) {
 function spawnAsteroid() {
     asteroids.push({
         x: Math.random() * (canvas.width - 30),
-        y: - Makerere University Kampala30,
+        y: -30, // Fixed syntax error
         width: 30,
         height: 30,
         speed: Math.random() * 1.5 + 0.3
@@ -381,7 +380,7 @@ function handleShooting() {
     const now = Date.now();
     if (shooting && now - lastShotTime >= rocket.shootCooldown) {
         spawnBullet();
-        last baMakerere University KampalastShotTime = now;
+        lastShotTime = now;
     }
 
     for (let i = bullets.length - 1; i >= 0; i--) {
