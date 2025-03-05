@@ -19,6 +19,18 @@ body {
     margin-top: 10px;
 }
 
+#controls-info {
+    color: white;
+    font-size: 18px;
+    margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+    #controls-info {
+        display: none;
+    }
+}
+
 #gameOver {
     position: absolute;
     background: rgba(0, 0, 0, 0.8);
@@ -46,10 +58,44 @@ body {
     color: white;
     cursor: pointer;
     border-radius: 5px;
+    margin-top: 10px;
 }
 
 #gameOver button:hover {
     background-color: #45a049;
+}
+
+#highscore-input {
+    margin: 10px 0;
+}
+
+#highscore-input label {
+    font-size: 18px;
+}
+
+#highscore-input input {
+    font-size: 18px;
+    text-transform: uppercase;
+    margin: 5px;
+}
+
+#leaderboard {
+    margin: 10px 0;
+}
+
+#leaderboard h2 {
+    font-size: 24px;
+    margin: 10px 0;
+}
+
+#highscore-list {
+    list-style: none;
+    padding: 0;
+    font-size: 18px;
+}
+
+#highscore-list li {
+    margin: 5px 0;
 }
 
 .hidden {
